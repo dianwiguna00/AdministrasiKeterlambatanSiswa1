@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Absensi Online</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    padding:20px;
+    background:#f3f5f8;
+}
+
+.toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.toolbar select,
+.toolbar input{
+    height:48px;
+    font-size:20px;
+    padding:0 10px;
+}
+
+.toolbar button{
+    height:48px;
+    padding:0 15px;
+    font-size:16px;
+    white-space:nowrap;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* Container scroll */
+.table-container{
+    overflow:auto;
+    max-width:100%;
+    max-height:80vh;
+}
+
+table{
+    border-collapse:collapse;
+    width:auto;
+}
+
+th,
+td{
+    border:1px solid #ccc;
+    padding:4px 8px;
+    white-space:nowrap;
+}
+
+/* Header terkunci */
+th{
+    background:#0d6efd;
+    color:white;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.nama{
+    text-align:left;
+    padding-left:15px;
+    width:auto;
+    font-size:18px;
+}
+
+/* Kolom No terkunci */
+.sticky-no{
+    position:sticky;
+    left:0;
+    background:white;
+    z-index:5;
+}
+
+/* Perpotongan header dan kolom No */
+th.sticky-no{
+    position:sticky;
+    left:0;
+    top:0;
+    background:#0d6efd;
+    color:white;
+    z-index:20;
+}
+
+.t{
+    background:#fd7e14;
+    color:white;
+    width:38px;
+    height:38px;
+    padding:0;
+    margin:0;
+    font-size:16px;
+    font-weight:bold;
+    border:none;
+    border-radius:6px;
+}
+
+.active{
+    outline:3px solid black;
+}
+
+.kelas-box{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
+    gap:8px;
+    margin:10px 0;
+}
+
+.kelas-box label{
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:10px;
+    background:white;
+}
+</style>
+</head>
+<body>
+
+<h2>ABSENSI SISWA TERLAMBAT</h2>
+<div class="toolbar">
+<select id="mapel">
+<option value="">Pilih Mapel</option>
+<option>Pendidikan Agama</option>
+<option>Bahasa Indonesia</option>
+<option>PPKn</option>
+<option>Matematika</option>
+<option>IPA</option>
+<option>IPS</option>
+<option>Bahasa Inggris</option>
+<option>Informatika</option>
+<option>PJOK</option>
+<option>Seni Budaya</option>
+<option>Prakarya</option>
+<option>Bahasa Jawa</option>
+<option>BK</option>
+</select>
+<select id="kelas" onchange="loadSiswa()">
+<option value="">Pilih Kelas</option>
+<option>7A</option>
+<option>7B</option>
+<option>7C</option>
+<option>7D</option>
+<option>7E</option>
+<option>7F</option>
+<option>7G</option>
+<option>7H</option>
+<option>7I</option>
+
+<option>8A</option>
+<option>8B</option>
+<option>8C</option>
+<option>8D</option>
+<option>8E</option>
+<option>8F</option>
+<option>8G</option>
+<option>8H</option>
+
+<option>9A</option>
+<option>9B</option>
+<option>9C</option>
+<option>9D</option>
+<option>9E</option>
+<option>9F</option>
+<option>9G</option>
+<option>9H</option>
+<option>9I</option>
+</select>
+
+<input type="date" id="tanggal">
+
+<button onclick="simpan()">
+Simpan
+</button>
+
+<span id="pesan"></span>
+
+<button onclick="downloadCSV()">
+📥 Download
+</button>
+</div>
+<div style="overflow:auto">
+<div class="table-container">
+<table>
+
+<thead>
+<tr>
+<th class="sticky-no">No</th>
+<th>NIS</th>
+<th>Nama</th>
+<th>L/P</th>
+<th>T</th>
+</tr>
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+</div>
+</div>
+<script>
+
+const API = "https://script.google.com/macros/s/AKfycbwP3qz8mEfVRCCr8fWw_UR83fuCuIFRo7-Zkg2jbmhw6V-BMccb-85tz6Q8ot9Rod09sg/exec";
+
+let dataSiswa = [];
+
+async function loadSiswa(){
+
+    try{
+
+        const kelas =
+        document.getElementById("kelas").value;
+
+        const res =
+        await fetch(API + "?kelas=" + kelas);
+
+        dataSiswa =
+        await res.json();
+
+        dataSiswa.forEach(s=>{
+        s.status = "";
+        });
+
+        render();
+
+    }catch(err){
+
+        alert("Gagal mengambil data siswa");
+
+    }
+}
+
+function render(){
+
+    let html = "";
+
+    dataSiswa.forEach((s,i)=>{
+
+        html += `
+        <tr>
+
+        <td class="sticky-no">${s.no}</td>
+
+        <td>${s.nis}</td>
+
+        <td class="nama">${s.nama}</td>
+
+        <td>${s.jk}</td>
+
+        <td>
+        <button
+        class="t ${s.status==='T'?'active':''}"
+        onclick="toggleTerlambat(${i})">
+        T
+        </button>
+        </td>
+
+        </tr>
+        `;
+    });
+
+    document.getElementById("tbody").innerHTML = html;
+}
+
+function setStatus(i,status){
+
+    dataSiswa[i].status = status;
+
+    render();
+}
+
+function toggleTerlambat(i){
+
+    if(dataSiswa[i].status === "T"){
+
+        dataSiswa[i].status = "";
+
+    }else{
+
+        dataSiswa[i].status = "T";
+
+    }
+
+    render();
+
+}
+
+async function simpan(){
+
+let mapel =
+document.getElementById(
+    "mapel"
+).value;
+
+if(!mapel){
+
+    alert(
+        "Pilih mapel terlebih dahulu"
+    );
+
+    return;
+
+}
+
+let tanggal =
+document.getElementById(
+    "tanggal"
+).value;
+
+if(!tanggal){
+
+    alert(
+        "Pilih tanggal terlebih dahulu"
+    );
+
+    return;
+
+}
+    try{
+
+const data = {
+
+    mapel:
+    document.getElementById(
+        "mapel"
+    ).value,
+
+    kelas:
+    document.getElementById(
+        "kelas"
+    ).value,
+
+    tanggal:
+    document.getElementById(
+        "tanggal"
+    ).value,
+
+    absensi:
+    dataSiswa
+
+};
+
+const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify(data)
+});
+
+const hasil = await res.text();
+
+alert(
+    "Data keterlambatan berhasil disimpan"
+);
+
+}catch(err){
+
+    alert(
+        "Gagal menyimpan data keterlambatan"
+    );
+
+}
+
+}
+
+window.onload = function(){
+
+    document.getElementById("tanggal").value =
+    new Date().toISOString().split("T")[0];
+
+    loadSiswa();
+}
+
+// ================= DOWNLOAD =================
+async function downloadCSV(){
+
+    let mapel =
+    document.getElementById(
+        "mapel"
+    ).value;
+
+    if(!mapel){
+
+        alert(
+            "Pilih mapel terlebih dahulu"
+        );
+
+        return;
+
+    }
+
+    let kelas =
+    document.getElementById(
+        "kelas"
+    ).value;
+
+    try{
+
+        let response =
+        await fetch(
+            API +
+            "?rekap=" +
+            encodeURIComponent(kelas) +
+            "&mapel=" +
+            encodeURIComponent(mapel)
+        );
+
+        let data =
+        await response.json();
+
+        let csv = "";
+
+        data.forEach(row=>{
+
+            csv +=
+            row.join(";") + "\n";
+
+        });
+
+Android.downloadCSV(
+    csv,
+    "Terlambat_" + mapel + "_" + kelas + ".csv"
+);
+
+    }catch(err){
+
+        alert(
+            "Gagal mengunduh rekap"
+        );
+
+    }
+
+}
+
+
+</script>
+
+</body>
+</html>
