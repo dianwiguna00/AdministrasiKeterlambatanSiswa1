@@ -210,7 +210,7 @@ Simpan
 </div>
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbyfBljtUoA3qjxQtV3IWGeIQcYa34Kkpw04w8SSQ0DZexIgTFTFE-jvb7XAxHvxBN5Z/exec";
+const API = "https://script.google.com/macros/s/AKfycby6jShwk7y_6Nc7m2yK80NL1jE_BvM-DXrhKQzi1jKe59oW_TMmgdbn53mM7vEDRnxw/exec";
 
 let dataSiswa = [];
 
@@ -336,7 +336,27 @@ const data = {
     ).value,
 
     absensi:
-    dataSiswa
+    dataSiswa,
+
+    deviceId:
+(
+    window.Android &&
+    typeof Android.getDeviceId === "function"
+)
+?
+Android.getDeviceId()
+:
+"",
+
+deviceName:
+(
+    window.Android &&
+    typeof Android.getDeviceName === "function"
+)
+?
+Android.getDeviceName()
+:
+""
 
 };
 
