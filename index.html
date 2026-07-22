@@ -298,7 +298,7 @@ function toggleTerlambat(i){
 }
 
 async function simpan(){
-
+flashButton("btnSimpan");
 let mapel =
 document.getElementById(
     "mapel"
@@ -370,7 +370,7 @@ const res = await fetch(API,{
 });
 
 const hasil = await res.text();
-flashButton("btnSimpan");
+
 }catch(err){
 
 }
@@ -398,7 +398,7 @@ function flashButton(id){
 }
 // ================= DOWNLOAD =================
 async function downloadCSV(){
-
+flashButton("btnDownload");
     let mapel =
     document.getElementById(
         "mapel"
@@ -440,7 +440,6 @@ async function downloadCSV(){
 
 Android.downloadCSV(csv);
 
-flashButton("btnDownload");
 
     }catch(err){
 
